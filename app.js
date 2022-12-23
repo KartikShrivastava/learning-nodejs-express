@@ -1,47 +1,14 @@
 import express from 'express'
-
-// can't import json directly in nodejs 14+ while using type module in package.json, and they say nodejs is straightforward, bs buggy mess
-// import students from './data/students.json'
-import { createRequire } from 'module'
-const require = createRequire(import.meta.url)
-const students = require('./data/students.json')
-
-import _ from 'lodash'
+// var StudentRoute = require('./routes/StudentRoute')
+import {studentRouter} from './routes/StudentRoute.js'
 
 const buildUrl = (version, path) => `/api/${version}/${path}`
+const STUDENTS_BASE_URL = buildUrl('v1', 'students')
 
 const PORT = 3000
 const server = express()
-const STUDENTS_BASE_URL = buildUrl('v1', 'students')
 
-server.get(STUDENTS_BASE_URL, (req, res) => {
-    res.json(students)
-})
-
-server.get(`${STUDENTS_BASE_URL}/:id`, (req, res) => {
-    const id = req.params.id
-    const student = _.find(students, (student) => student.id == id)
-    if(student) {
-        res.json(student)
-    } else {
-        res.json(`User not found with id ${id}.`)
-    }
-})
-
-server.post(STUDENTS_BASE_URL, (req, res) => {
-    console.log("Handling POST http request")
-    res.end()
-})
-
-server.put(STUDENTS_BASE_URL, (req, res) => {
-    console.log("Handling PUT http request")
-    res.end()
-})
-
-server.delete(STUDENTS_BASE_URL, (req, res) => {
-    console.log("Handling DELETE http request")
-    res.end()
-})
+server.use(STUDENTS_BASE_URL, studentRouter)
 
 // get route handler with multiple handlers
 server.get('/route-handlers', (req, res, next) => {
