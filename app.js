@@ -1,4 +1,6 @@
 import express from 'express'
+// this package helps in logging http requests made by server
+import morgan from 'morgan'
 // var StudentRoute = require('./routes/StudentRoute')
 import {studentRouter} from './routes/StudentRoute.js'
 
@@ -7,6 +9,8 @@ const STUDENTS_BASE_URL = buildUrl('v1', 'students')
 
 const PORT = 3000
 const server = express()
+
+server.use(morgan('tiny'))
 
 server.use(STUDENTS_BASE_URL, studentRouter)
 

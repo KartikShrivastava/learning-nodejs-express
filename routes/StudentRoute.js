@@ -1,6 +1,10 @@
+// backend framework which uses nodejs
 import express from 'express'
+// provides utilities to add functionality such as searching on json object using props
 import _ from 'lodash'
+// a wanky way to get json object from a file
 import { createRequire } from 'module'
+
 const require = createRequire(import.meta.url)
 const students = require('../data/students.json')
 
@@ -35,9 +39,14 @@ studentRouter.delete('/', (req, res) => {
     res.end()
 })
 
-function hello2() {
-    return 'hello2'
-}
+studentRouter.param('id', (req, res, next, id) => {
+    if(isNaN(id)) {
+        next(`${id} is not a valid number.`)
+    }
+    else {
+        next()
+    }
+})
 
 // module.exports = studentRouter
 export {studentRouter}
