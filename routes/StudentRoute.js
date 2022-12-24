@@ -4,10 +4,9 @@ import express from 'express'
 import _ from 'lodash'
 // a wanky way to get json object from a file
 import { createRequire } from 'module'
-import path from 'path'
-
 const require = createRequire(import.meta.url)
 const students = require('../data/students.json')
+import path from 'path'
 
 const studentRouter = express.Router()
 

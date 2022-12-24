@@ -5,6 +5,11 @@ import morgan from 'morgan'
 import {studentRouter} from './routes/StudentRoute.js'
 // another middleware useful in parsing body of the client http request
 import bodyParser from 'body-parser'
+import path from 'path'
+// a wanky way to get json object from a file
+import { createRequire } from 'module'
+const require = createRequire(import.meta.url)
+const students = require('./data/students.json')
 
 const buildUrl = (version, path) => `/api/${version}/${path}`
 const STUDENTS_BASE_URL = buildUrl('v1', 'students')
@@ -16,7 +21,16 @@ server.use(morgan('tiny'))
 server.use(bodyParser.json())
 // express.static let's us serve static content to client
 server.use(express.static('public'))
+// ejs template engine setup
+server.set('views', path.join('views'))
+server.set('view engine', 'ejs')
+
 server.use(STUDENTS_BASE_URL, studentRouter)
+server.get('/', (req, res) => {
+    res.render('index', {
+        students: students
+    })
+})
 
 // get route handler with multiple handlers
 server.get('/route-handlers', (req, res, next) => {
