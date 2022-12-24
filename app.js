@@ -10,16 +10,27 @@ import path from 'path'
 import { createRequire } from 'module'
 const require = createRequire(import.meta.url)
 const students = require('./data/students.json')
+// imports used to setup server securely over https connection
+import https from 'https'
+import fs from 'fs'
+
+// tls https connection options setup
+const tlsOptions = {
+    key: fs.readFileSync(path.join('key.pem')),
+    cert: fs.readFileSync(path.join('cert.pem')),
+    passphrase: 'kash'
+}
 
 const buildUrl = (version, path) => `/api/${version}/${path}`
 const STUDENTS_BASE_URL = buildUrl('v1', 'students')
 
 const PORT = 3000
+const TLSPORT = 3003
 const server = express()
 
 server.use(morgan('tiny'))
 server.use(bodyParser.json())
-// express.static let's us serve static content to client
+// express.static let's us serve static content to client(in our case images)
 server.use(express.static('public'))
 // ejs template engine setup
 server.set('views', path.join('views'))
@@ -46,4 +57,9 @@ server.get('/route-handlers', (req, res, next) => {
 
 server.listen(PORT, () => {
     console.log(`server started on port ${PORT}`)
+})
+
+// start https server in different port
+https.createServer(tlsOptions, server).listen(TLSPORT, () => {
+    console.log(`https server started on port ${TLSPORT}`)
 })
