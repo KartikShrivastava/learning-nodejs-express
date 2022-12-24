@@ -4,19 +4,22 @@ import express from 'express'
 import _ from 'lodash'
 // a wanky way to get json object from a file
 import { createRequire } from 'module'
+import path from 'path'
 
 const require = createRequire(import.meta.url)
 const students = require('../data/students.json')
 
 const studentRouter = express.Router()
 
+let studentsArray = students
+
 studentRouter.get('/', (req, res) => {
-    res.json(students)
+    res.json(studentsArray)
 })
 
 studentRouter.get('/:id', (req, res) => {
     const id = req.params.id
-    const student = _.find(students, (student) => student.id == id)
+    const student = _.find(studentsArray, (student) => student.id == id)
     if(student) {
         res.json(student)
     } else {
@@ -24,9 +27,17 @@ studentRouter.get('/:id', (req, res) => {
     }
 })
 
+// download static content
+studentRouter.get('/download/images/:imageName', (req, res)=>{
+    var myPath = path.join('public', 'images', req.params.imageName)
+    res.download(myPath)
+})
+
 studentRouter.post('/', (req, res) => {
     console.log("Handling POST http request")
-    res.end()
+    console.log(req.body)
+    studentsArray.push(req.body)
+    res.status(200).send('OK')
 })
 
 studentRouter.put('/', (req, res) => {
