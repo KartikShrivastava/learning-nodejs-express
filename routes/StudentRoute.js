@@ -7,6 +7,23 @@ import { createRequire } from 'module'
 const require = createRequire(import.meta.url)
 const students = require('../data/students.json')
 import path from 'path'
+import mongoose from 'mongoose'
+
+// connect to mongodb cloud database(hosted in AWS) using mongoose
+const DB_URL = `mongodb+srv://kash:kash@cluster0.gc5wlml.mongodb.net/?retryWrites=true&w=majority`
+mongoose.connect(DB_URL)
+const db = mongoose.connection
+db.once('open', () => {
+    console.log("Hurray we are connected to mongodb")
+})
+// schema for mongoose data access object layer
+const StudentSchema = mongoose.Schema({
+    _id: mongoose.Schema.Types.ObjectId,
+    name: String,
+    course: String
+})
+// convert mongoose schema into model
+const StudentModel = mongoose.model('Student', StudentSchema)
 
 const studentRouter = express.Router()
 
