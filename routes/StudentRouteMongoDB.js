@@ -24,8 +24,6 @@ const StudentModel = mongoose.model('Student', StudentSchema)
 
 const studentRouter = express.Router()
 
-// let studentsArray = students
-
 studentRouter.get('/', (req, res) => {
     StudentModel.find((err, students) => {
         if(err) res.status(500).send(err)
@@ -37,6 +35,7 @@ studentRouter.get('/:id', (req, res) => {
     StudentModel.findById(req.params.id, (err, student) => {
         if(err)
             res.status(500).send(err)
+            
         if(student)
             res.json(student)
         else
@@ -51,22 +50,46 @@ studentRouter.post('/', (req, res) => {
     }, req.body)
 
     const student = new StudentModel(studentToPersist)
-    student.save().then((err, student) => {
-        if(err) {
+    student.save((err, student) => {
+        if(err)
             res.status(500).send(err)
-        }
-        res.json(student)
+        else
+            res.json(student)
     })
 })
 
-studentRouter.put('/', (req, res) => {
-    console.log("Handling PUT http request")
-    res.end()
+studentRouter.put('/:id', (req, res) => {
+    // find user with given id
+    StudentModel.findById(req.params.id, (err, student) => {
+        if(err)
+            res.status(500).send(err)
+
+        if(student) {
+            // if id found then update the requested data
+            student.name = req.body.name
+            student.course = req.body.course
+    
+            // save back to the database
+            student.save((err, student) => {
+                if(err)
+                    res.status(500).send(err)
+                else
+                    res.json(student)
+            })
+        }
+        else {
+            res.status(404).send(`User with id ${req.params.id} not found`)
+        }
+    })
 })
 
-studentRouter.delete('/', (req, res) => {
-    console.log("Handling DELETE http request")
-    res.end()
+studentRouter.delete('/:id', (req, res) => {
+    StudentModel.findByIdAndRemove(req.params.id, (err, studentRemoved) => {
+        if(err)
+            res.status(500).send(err)
+        else
+            res.status(200).end(`Student with id ${req.params.id} deleted`)
+    })
 })
 
 // module.exports = studentRouter
