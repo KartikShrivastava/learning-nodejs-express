@@ -2,11 +2,6 @@
 import express from 'express'
 // provides utilities to add functionality such as searching on json object using props
 import _ from 'lodash'
-// a wanky way to get json object from a file
-import { createRequire } from 'module'
-const require = createRequire(import.meta.url)
-const students = require('../data/students.json')
-import path from 'path'
 import mongoose from 'mongoose'
 
 // connect to mongodb cloud database(hosted in AWS) using mongoose
@@ -16,44 +11,52 @@ const db = mongoose.connection
 db.once('open', () => {
     console.log("Hurray we are connected to mongodb")
 })
+
 // schema for mongoose data access object layer
 const StudentSchema = mongoose.Schema({
     _id: mongoose.Schema.Types.ObjectId,
     name: String,
     course: String
 })
+
 // convert mongoose schema into model
 const StudentModel = mongoose.model('Student', StudentSchema)
 
 const studentRouter = express.Router()
 
-let studentsArray = students
+// let studentsArray = students
 
 studentRouter.get('/', (req, res) => {
-    res.json(studentsArray)
+    StudentModel.find((err, students) => {
+        if(err) res.status(500).send(err)
+        res.json(students)
+    })
 })
 
 studentRouter.get('/:id', (req, res) => {
-    const id = req.params.id
-    const student = _.find(studentsArray, (student) => student.id == id)
-    if(student) {
-        res.json(student)
-    } else {
-        res.json(`User not found with id ${id}.`)
-    }
-})
-
-// download static content
-studentRouter.get('/download/images/:imageName', (req, res)=>{
-    var myPath = path.join('public', 'images', req.params.imageName)
-    res.download(myPath)
+    StudentModel.findById(req.params.id, (err, student) => {
+        if(err)
+            res.status(500).send(err)
+        if(student)
+            res.json(student)
+        else
+            res.status(404).send(`User with id ${req.params.id} not found`)
+    })
 })
 
 studentRouter.post('/', (req, res) => {
-    console.log("Handling POST http request")
-    console.log(req.body)
-    studentsArray.push(req.body)
-    res.status(200).send('OK')
+    const id = new mongoose.Types.ObjectId();
+    const studentToPersist = Object.assign({
+        _id : id
+    }, req.body)
+
+    const student = new StudentModel(studentToPersist)
+    student.save().then((err, student) => {
+        if(err) {
+            res.status(500).send(err)
+        }
+        res.json(student)
+    })
 })
 
 studentRouter.put('/', (req, res) => {
@@ -64,15 +67,6 @@ studentRouter.put('/', (req, res) => {
 studentRouter.delete('/', (req, res) => {
     console.log("Handling DELETE http request")
     res.end()
-})
-
-studentRouter.param('id', (req, res, next, id) => {
-    if(isNaN(id)) {
-        next(`${id} is not a valid number.`)
-    }
-    else {
-        next()
-    }
 })
 
 // module.exports = studentRouter

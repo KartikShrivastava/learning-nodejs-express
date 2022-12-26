@@ -2,7 +2,8 @@ import express from 'express'
 // this package(middleware) helps in logging http requests made by server
 import morgan from 'morgan'
 // var StudentRoute = require('./routes/StudentRoute')
-import {studentRouter} from './routes/StudentRoute.js'
+// import {studentRouter} from './routes/StudentRouteFakeDB.js' // fake database router
+import {studentRouter} from './routes/StudentRouteMongoDB.js' // mongo database router
 // another middleware useful in parsing body of the client http request
 import bodyParser from 'body-parser'
 import path from 'path'
